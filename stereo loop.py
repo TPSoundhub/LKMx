@@ -18,7 +18,7 @@ from scipy.fftpack import fft,fftfreq      # scipy pakken skal med i pakken aht 
 # Globale konstanter
 #
 SAMPLERATE     = 44100
-DURATION       = 0.5       # SKAL være >= 0.3 for at koden nedenfor fungerer mht delay/pauser. Angives i sekunder. Eksperimenteres med stødtoner så sæt evt til 1.0
+DURATION       = 0.5       # SKAL være >= 0.2 for at koden nedenfor fungerer mht delay/pauser. Angives i sekunder. Eksperimenteres med stødtoner så sæt evt til 1.0
 MAX_AMP        = 32000
 MAX_FREQ       = 6000      # Max freq til plot i FFT og i loop (while løkken)
 TIME_TO_PLOT   = 10        # i ms
@@ -28,12 +28,12 @@ ONLY_ONE_FFT   = False
 ONLY_ONE_SOUND = True
 SPEED_OF_SOUND = 343       # m/s i luft ved 20 grader celsius
 DELTA          = 0         # DELTA er forskel på frekvens i højre og venstre. hvis > 0 opleves stødtoner. 
-
+STEP_IN_SWEEP  = 50        # i Hz - den forskel der er mellem freq i while loop i sweep
 #
 # Globale variable
 #
 freq_left  = 50
-freq_right = 50+DELTA                  # Lad evt frekvensen i højre være nogle få hertz større end i venstre for at opleve stødtoner/interferens. Sæt DELTA>0
+freq_right = 50+DELTA      # Lad evt frekvensen i højre være nogle få hertz større end i venstre for at opleve stødtoner/interferens. Sæt DELTA>0
 amp        = 5000
 
 #
@@ -56,13 +56,16 @@ if PLOT:
     combined_plot = plt.subplot(413)
     plt.title("højre plus venstre")    
     plt.ylabel("amp")
-
-    plt.axis([0,TIME_TO_PLOT,-MAX_AMP,MAX_AMP])      # Hvis I eksperiemnterer med stødtoner så skift evt. TIME_TO_PLOT ud med DURATION*1000 her
+    if DELTA==0:
+        plt.axis([0,TIME_TO_PLOT,-MAX_AMP,MAX_AMP])       # Når DELTA er nul så bruges samme tidsvindue for sammansat signal som for H/V 
+    else:
+        plt.axis([0,DURATION*1000,-MAX_AMP,MAX_AMP])      # MEN ved stødtoner er det mere interessant at se det på længere tid
+                                                          # - helst med DURATION sat til 1 sek. Hvorfor?
     
     fft_plot = plt.subplot(414)
     plt.title("FFT af højre+venstre")    
-    plt.xlabel("Frekvens")  
-    plt.axis([0,MAX_FREQ,5,10])                      # plot frekvenser under MAX_FREQ og amp over 5 i log10
+    plt.xlabel("Frekvens i Hz")  
+    plt.axis([0,MAX_FREQ,5,10])                           # plot frekvenser under MAX_FREQ og amp over 5 i log10
 
 #
 # initialiser pygame mixer til stereo og 16 bit (signed) så det matcher cross platform driver og lyd kort PC,MAC og PI/Beocreate
@@ -88,9 +91,9 @@ while freq_left < MAX_FREQ:
     #  - Tilsvarende kan set så være at man skal ekspeirmentere med længden af udsnit man plotter for det kombinerede signal..
     #
     blv = round(SPEED_OF_SOUND*100/freq_left,2)
-    print("Frekvens i venstre: "+str(freq_left)+" bølgelængden i venstre: "+str(blv)+" cm")
+    print("Frekvens i venstre: "+str(freq_left)+"Hz. Bølgelængden i venstre: "+str(blv)+" cm")
     blr = round(SPEED_OF_SOUND*100/freq_right,2)
-    print("Frekvens i højre:   "+str(freq_right)+" bølgelængden i højre:   "+str(blr)+" cm")
+    print("Frekvens i højre:   "+str(freq_right)+"Hz. Bølgelængden i højre:   "+str(blr)+" cm")
     print()
     #
     # Mixer kan håndtere at afspille 8 lyde samtidigt, men her lader vi den kun spille een ad gangen i et swwep.
@@ -131,8 +134,8 @@ while freq_left < MAX_FREQ:
     #
     # I dette eksempel lader vi frekvenserne i både højre og venstre vokse med 30 for hver tur i while løkken.
     #
-    freq_left+=30
-    freq_right=freq_left+DELTA     # ved stødtoner så lad højre få en delta > 0 den kan evt gøres variable i loop 
+    freq_left+=STEP_IN_SWEEP
+    freq_right=freq_left+DELTA     # ved stødtoner så lad højre få en delta > 0 - Den kan evt gøres variable i loop hvis I synes
 
 if PLOT: plt.waitforbuttonpress()  # vent på mus klik eller taste tryk i vinduet med figur inden program afsluttes. 
 pygame.mixer.quit()                # oprydning i mixer
