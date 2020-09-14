@@ -27,7 +27,7 @@ ONLY_ONE_CURVE = True
 ONLY_ONE_FFT   = False
 ONLY_ONE_SOUND = True
 SPEED_OF_SOUND = 343       # m/s i luft ved 20 grader celsius
-DELTA          = 5         # DELTA er forskel på frekvens i højre og venstre. hvis > 0 opleves stødtoner. 
+DELTA          = 0         # DELTA er forskel på frekvens i højre og venstre. hvis > 0 opleves stødtoner. 
 
 #
 # Globale variable
