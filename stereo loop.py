@@ -8,12 +8,10 @@
 # Der er ticks mellem lydene og sweep er ikke så 'smooth' - det kræver noget andet,hvis det skal ske - så kun som illustration.
 # For at lave en smooth sweep vil man lave een lyd der øges i freq i een tabel og konvertere til en lyd der afspilles.
 #
-
 import numpy as np
 import pygame
 import matplotlib.pyplot as plt
 from scipy.fftpack import fft,fftfreq      # scipy pakken skal med i pakken aht FFT. Fjernes den del kan den udelades. (Tools - manage packages)
-
 #
 # Globale konstanter
 #
@@ -33,9 +31,8 @@ STEP_IN_SWEEP  = 50        # i Hz - den forskel der er mellem freq i while loop 
 # Globale variable
 #
 freq_left  = 50
-freq_right = 50+DELTA      # Lad evt frekvensen i højre være nogle få hertz større end i venstre for at opleve stødtoner/interferens. Sæt DELTA>0
+freq_right = freq_left+DELTA      # Lad evt frekvensen i højre være nogle få hertz større end i venstre for at opleve stødtoner/interferens. Sæt DELTA>0
 amp        = 5000
-
 #
 # initialiseringer med hensyn til plot og figur
 #
@@ -96,8 +93,10 @@ while freq_left < MAX_FREQ:
     print("Frekvens i højre:   "+str(freq_right)+"Hz. Bølgelængden i højre:   "+str(blr)+" cm")
     print()
     #
-    # Mixer kan håndtere at afspille 8 lyde samtidigt, men her lader vi den kun spille een ad gangen i et swwep.
-    # Man kan gemme reference til de enkelte lyde (lyd objekter) og starte/stoppe dem individuelt...
+    # Mixer kan håndtere at afspille 8 lyde samtidigt, men her lader vi den kun spille een ad gangen i et sweep. (Med ONLY_ONE_SOUND = True)
+    # Man kan gemme reference til de enkelte lyde (lyd objekter) og starte/stoppe dem individuelt... Eksperimenter med det i senere udgave
+    # Man hører kun de første 8 lyde i sweep når man sætter konstanten til True ;-) Så det er ikke så fedt.... Så bør man justere de andre
+    # konstanter til sådan at man kun kommer rundt i loop 8 gange...
     #
     sound = pygame.sndarray.make_sound(signal)   
     sound.play(-1)                              
@@ -132,7 +131,7 @@ while freq_left < MAX_FREQ:
     if ONLY_ONE_SOUND: sound.stop()                    # Stop lyden hvis de ikke skal blandes
 
     #
-    # I dette eksempel lader vi frekvenserne i både højre og venstre vokse med 30 for hver tur i while løkken.
+    # I dette eksempel lader vi frekvenserne i både højre og venstre vokse med STEP_IN_SWEEP for hver tur i while løkken.
     #
     freq_left+=STEP_IN_SWEEP
     freq_right=freq_left+DELTA     # ved stødtoner så lad højre få en delta > 0 - Den kan evt gøres variable i loop hvis I synes
