@@ -2,18 +2,21 @@
 #
 # Lidt kode eksempler som opfølgning på observation af brug af Lyd KIT i fysik/informatik forløb på Herningsholm september 20
 # Tænkt som input/inspiration til lærer - Ender med en smooth sweep der er robust for startværdier givet i konstanter.
+# - Og en ekstra der laver det ved at bruge matematikken til en langt mere enkel kode!
 #
-# Knud - SHD - 23 sept. 2020 - Inkluderes i notesbog..
+# Knud - SHD - 24 sept. 2020 - Inkluderes i notesbog..
 #
 # At betragte som noter/forbedringspunkter/reflektioner som kan bruges når der skal rulles på Modul 2.
 # Hoved pointe er at man har et datapunkt for meget med hvis man tager en fuld periode og dermed får man ticks når man
 # afspiller lyd. Ved at fjerne det sidste datapunkt inden man sætter til afspilning kan det laves helt smooth.
 #
-# Bruges til at lave et sweep - I 3 udgaver der gradvist bliver mere robust for ændrede værdier i konstanterne.
+# Bruges til at lave et sweep - I 4 udgaver der gradvist bliver mere robust for ændrede værdier i konstanterne.
 # - Sammenhæng med hele peridoder og en længde på de enkelte steps i sweep.
+# - 4 udgave er ved at benytte matematikken til at lave det langt mere simpelt!
 #
 # Materiale der kunne tænkes anvendt i matematik (diskret matematik) og i programmering for at gå i dybden.
-#
+# Skal naturligvis bringes i spil på en fornuftig didaktisk måde.
+# Udfordring - At lave en smooth sweep som eleverne arbejder med (De skal naturligvis IKKE bare præsenteres for det som er i denne fil!
 #
 
 import numpy as np
@@ -267,4 +270,41 @@ sound.play(-1)
 
 pygame.time.delay(int(3000*int(len(t24)/SAMPLERATE)))
 sound.stop()
+
+#
+# Og så en bonus til at tænke over - rart med lidt matematik også.
+# Her laves smooth sweep ved at generere kurve direkte vha at opløfte værdier i tabel til en POWER (2 er den sat til i konstanten her)
+# og efterfølgende tage sinus af værdierne. Det giver en gradvis forøgelse af frekvens i signalet.
+# Så det er altså en HELT anden måde at nå til resultatet på!!
+#
+print("Pause på 10 sek")
+pygame.time.delay(10000)
+print("")
+
+print("Nu til udgave der løser det på en helt anden måde - vha matematik og andre funktioner i numpy")
+print("Det kan så klares med væsentlig færre linier kode!")
+#
+# Globale konstanter
+#
+SAMPLERATE    = 44100
+AMP           = 8000
+FREQ_START    = 10           # Denne gang som start freq der i alle datapunkter bliver opløftet til POWER så den skal være LILLE. 10 opløftet til 2 er 100    
+DURATION      = 10           # Samlet længde af sweep. Gør den evt mindre hvis POWER sættes højere end 2. Men OK at prøve.. 'Sjove effekter'
+POWER         = 2            # Det som alle datapunkter opløftes til inden sinus funktionen anvendes på dem Prøv bare med 3 og 4 - OG 1 for den sags skyld
+
+pygame.mixer.init(SAMPLERATE, -16, 1)
+
+x1  = np.linspace(0,DURATION*FREQ_START*2*np.pi,DURATION*SAMPLERATE,endpoint=False)
+x2  = np.arange(0,DURATION*SAMPLERATE)
+x2.fill(POWER)
+
+x3 = np.power(x1,x2)  # Alle datapunkter i x1 bliver opløftet til værdi i x2 på samme position (alle værdier i x2 indeholder POWER som værdi)
+
+t1 = (np.sin(x3)*AMP).astype(np.int16)
+
+#
+# Afspil lyden 
+#
+sound = pygame.sndarray.make_sound(t1)   
+sound.play()           
 
